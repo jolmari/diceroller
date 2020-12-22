@@ -92,17 +92,56 @@
       </div>
     </div>
     <div class="roll-container">
-      <button class="btn btn-primary">Roll dice!</button>
+      <button class="btn btn-primary" v-on:click="onSubmitDicePool()">
+        Roll dice!
+      </button>
+    </div>
+    <div class="result-container">
+      <p>{{ state.latestDiceResult }}</p>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, reactive } from "vue";
+import { EnvironmentHelper } from "@/helpers/environment-helper";
+import axios from "axios";
+
+interface State {
+  latestDiceResult: any;
+}
 
 export default defineComponent({
   name: "App",
+  props: {},
   components: {},
+  setup(props) {
+    const state = reactive<State>({
+      latestDiceResult: [],
+    });
+
+    const onSubmitDicePool = (): void => {
+      axios
+        .post(`${EnvironmentHelper.baseUrl}/calculate`, {
+          "rolls": [
+            {
+              "sides": 4,
+              "amount": 5
+            },
+            {
+              "sides": 12,
+              "amount": 2
+            }
+          ]
+        })
+        .then((result) => (state.latestDiceResult = result));
+    };
+
+    return {
+      state,
+      onSubmitDicePool
+    };
+  },
 });
 </script>
 
