@@ -191,7 +191,7 @@ export default defineComponent({
 
     const onSubmitDicePool = (): void => {
       axios
-        .post(`${EnvironmentHelper.baseUrl}/calculate`, collectDicePool())
+        .post(`${EnvironmentHelper.baseUrl}/api/calculate`, collectDicePool())
         .then(
           (result: AxiosResponse<RollResult[]>) =>
             (state.latestDiceResult = groupDiceResults(result.data))
