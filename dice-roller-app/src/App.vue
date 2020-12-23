@@ -13,7 +13,7 @@
             <img src="./assets/d4-icon.png" alt="1d4" class="dice" />
           </div>
           <label for="d4-input"><b>1d4</b></label>
-          <input id="d4-input" name="d4-input" type="number" placeholder="0" />
+          <input id="d4-input" name="d4-input" type="number" v-model="state.d4Amount" min="0" />
         </div>
       </div>
       <div class="col col-1 col-mx-auto">
@@ -22,7 +22,7 @@
             <img src="./assets/d6-icon.png" alt="1d6" class="dice" />
           </div>
           <label for="d6-input"><b>1d6</b></label>
-          <input id="d6-input" name="d6-input" type="number" placeholder="0" />
+          <input id="d6-input" name="d6-input" type="number" v-model="state.d6Amount" min="0" />
         </div>
       </div>
       <div class="col col-1 col-mx-auto">
@@ -31,7 +31,7 @@
             <img src="./assets/d8-icon.png" alt="1d8" class="dice" />
           </div>
           <label for="d8-input"><b>1d8</b></label>
-          <input id="d8-input" name="d8-input" type="number" placeholder="0" />
+          <input id="d8-input" name="d8-input" type="number" v-model="state.d8Amount" min="0" />
         </div>
       </div>
       <div class="col col-1 col-mx-auto">
@@ -40,12 +40,7 @@
             <img src="./assets/d10-icon.png" alt="1d10" class="dice" />
           </div>
           <label for="d10-input"><b>1d10</b></label>
-          <input
-            id="d10-input"
-            name="d10-input"
-            type="number"
-            placeholder="0"
-          />
+          <input id="d10-input" name="d10-input" type="number" v-model="state.d10Amount" min="0" />
         </div>
       </div>
       <div class="col col-1 col-mx-auto">
@@ -54,12 +49,7 @@
             <img src="./assets/d12-icon.png" alt="1d12" class="dice" />
           </div>
           <label for="d12-input"><b>1d12</b></label>
-          <input
-            id="d12-input"
-            name="d12-input"
-            type="number"
-            placeholder="0"
-          />
+          <input id="d12-input" name="d12-input" type="number" v-model="state.d12Amount" min="0" />
         </div>
       </div>
       <div class="col col-1 col-mx-auto">
@@ -68,12 +58,7 @@
             <img src="./assets/d20-icon.png" alt="1d20" class="dice" />
           </div>
           <label for="d20-input"><b>1d20</b></label>
-          <input
-            id="d20-input"
-            name="d20-input"
-            type="number"
-            placeholder="0"
-          />
+          <input id="d20-input" name="d20-input" type="number" v-model="state.d20Amount" min="0" />
         </div>
       </div>
       <div class="col col-1 col-mx-auto">
@@ -86,7 +71,8 @@
             id="d100-input"
             name="d100-input"
             type="number"
-            placeholder="0"
+            v-model="state.d100Amount"
+            min="0"
           />
         </div>
       </div>
@@ -103,45 +89,85 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive } from "vue";
-import { EnvironmentHelper } from "@/helpers/environment-helper";
-import axios from "axios";
+import { defineComponent, reactive } from 'vue';
+import { EnvironmentHelper } from '@/helpers/environment-helper';
+import { RollResult } from '@/models/rollResult';
+import { DicePool } from '@/models/dicePool';
+import { DiceRoll } from '@/models/diceRoll';
+import axios, { AxiosResponse } from 'axios';
 
 interface State {
+  d4Amount: number;
+  d6Amount: number;
+  d8Amount: number;
+  d10Amount: number;
+  d12Amount: number;
+  d20Amount: number;
+  d100Amount: number;
   latestDiceResult: any;
 }
 
 export default defineComponent({
-  name: "App",
+  name: 'App',
   props: {},
   components: {},
-  setup(props) {
+  setup() {
     const state = reactive<State>({
-      latestDiceResult: [],
+      d4Amount: 1,
+      d6Amount: 2,
+      d8Amount: 3,
+      d10Amount: 4,
+      d12Amount: 5,
+      d20Amount: 6,
+      d100Amount: 7,
+      latestDiceResult: []
     });
+
+    const collectDicePool = (): DicePool =>
+      new DicePool({
+        rolls: [
+          new DiceRoll({
+            sides: 4,
+            amount: state.d4Amount
+          }),
+          new DiceRoll({
+            sides: 6,
+            amount: state.d6Amount
+          }),
+          new DiceRoll({
+            sides: 8,
+            amount: state.d8Amount
+          }),
+          new DiceRoll({
+            sides: 10,
+            amount: state.d10Amount
+          }),
+          new DiceRoll({
+            sides: 12,
+            amount: state.d12Amount
+          }),
+          new DiceRoll({
+            sides: 20,
+            amount: state.d20Amount
+          }),
+          new DiceRoll({
+            sides: 100,
+            amount: state.d100Amount
+          })
+        ]
+      });
 
     const onSubmitDicePool = (): void => {
       axios
-        .post(`${EnvironmentHelper.baseUrl}/calculate`, {
-          "rolls": [
-            {
-              "sides": 4,
-              "amount": 5
-            },
-            {
-              "sides": 12,
-              "amount": 2
-            }
-          ]
-        })
-        .then((result) => (state.latestDiceResult = result));
+        .post(`${EnvironmentHelper.baseUrl}/calculate`, collectDicePool())
+        .then((result: AxiosResponse<RollResult[]>) => (state.latestDiceResult = result.data));
     };
 
     return {
       state,
       onSubmitDicePool
     };
-  },
+  }
 });
 </script>
 
