@@ -1,4 +1,8 @@
 export class RollResult {
-  public sides: number = 0;
-  public result: number = 0;
+  constructor(init: Partial<RollResult>) {
+    Object.assign(this, init);
+  }
+
+  public sides = 0;
+  public result = 0;
 }

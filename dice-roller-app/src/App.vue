@@ -77,13 +77,30 @@
         </div>
       </div>
     </div>
-    <div class="roll-container">
-      <button class="btn btn-primary" v-on:click="onSubmitDicePool()">
-        Roll dice!
-      </button>
+    <div class="columns" v-if="Object.keys(state.latestDiceResult).length">
+      <div class="col col-10 col-mx-auto">
+        <table class="table table-striped">
+          <thead>
+            <th>Sides</th>
+            <th>Results</th>
+            <th>Total</th>
+          </thead>
+          <tbody>
+            <tr v-for="(diceGroup, index) in state.latestDiceResult" :key="index">
+              <td>{{ index }}</td>
+              <td>{{ diceGroup.join(', ') }}</td>
+              <td>{{ calculateSum(diceGroup) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div class="result-container">
-      <p>{{ state.latestDiceResult }}</p>
+    <div class="columns">
+      <div class="col col-10 col-mx-auto">
+        <button class="btn btn-primary" v-on:click="onSubmitDicePool()">
+          Roll dice!
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -94,6 +111,7 @@ import { EnvironmentHelper } from '@/helpers/environment-helper';
 import { RollResult } from '@/models/rollResult';
 import { DicePool } from '@/models/dicePool';
 import { DiceRoll } from '@/models/diceRoll';
+import { GroupedResult } from '@/models/groupedResult';
 import axios, { AxiosResponse } from 'axios';
 
 interface State {
@@ -104,7 +122,7 @@ interface State {
   d12Amount: number;
   d20Amount: number;
   d100Amount: number;
-  latestDiceResult: any;
+  latestDiceResult: GroupedResult;
 }
 
 export default defineComponent({
@@ -113,14 +131,14 @@ export default defineComponent({
   components: {},
   setup() {
     const state = reactive<State>({
-      d4Amount: 1,
-      d6Amount: 2,
-      d8Amount: 3,
-      d10Amount: 4,
-      d12Amount: 5,
-      d20Amount: 6,
-      d100Amount: 7,
-      latestDiceResult: []
+      d4Amount: 0,
+      d6Amount: 0,
+      d8Amount: 0,
+      d10Amount: 0,
+      d12Amount: 0,
+      d20Amount: 0,
+      d100Amount: 0,
+      latestDiceResult: new GroupedResult()
     });
 
     const collectDicePool = (): DicePool =>
@@ -157,14 +175,32 @@ export default defineComponent({
         ]
       });
 
+    const calculateSum = (numbers: number[]) =>
+      numbers.reduce((acc: number, current: number) => acc + current, 0);
+
+    const groupDiceResults = (result: RollResult[]): GroupedResult => {
+      return result.reduce((acc: GroupedResult, current: any) => {
+        if (!acc[current.sides]) {
+          acc[current.sides] = [];
+        }
+
+        acc[current.sides] = [...acc[current.sides], current.result];
+        return acc;
+      }, new GroupedResult());
+    };
+
     const onSubmitDicePool = (): void => {
       axios
         .post(`${EnvironmentHelper.baseUrl}/calculate`, collectDicePool())
-        .then((result: AxiosResponse<RollResult[]>) => (state.latestDiceResult = result.data));
+        .then(
+          (result: AxiosResponse<RollResult[]>) =>
+            (state.latestDiceResult = groupDiceResults(result.data))
+        );
     };
 
     return {
       state,
+      calculateSum,
       onSubmitDicePool
     };
   }
