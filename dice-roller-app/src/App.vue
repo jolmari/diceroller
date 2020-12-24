@@ -7,99 +7,132 @@
     </div>
 
     <div class="columns">
-      <div class="col col-1 col-mx-auto">
-        <div class="dice-panel">
-          <div class="dice-icon">
-            <img src="./assets/d4-icon.png" alt="1d4" class="dice" />
-          </div>
-          <label for="d4-input"><b>1d4</b></label>
-          <input id="d4-input" name="d4-input" type="number" v-model="state.d4Amount" min="0" />
-        </div>
-      </div>
-      <div class="col col-1 col-mx-auto">
-        <div class="dice-panel">
-          <div class="dice-icon">
-            <img src="./assets/d6-icon.png" alt="1d6" class="dice" />
-          </div>
-          <label for="d6-input"><b>1d6</b></label>
-          <input id="d6-input" name="d6-input" type="number" v-model="state.d6Amount" min="0" />
-        </div>
-      </div>
-      <div class="col col-1 col-mx-auto">
-        <div class="dice-panel">
-          <div class="dice-icon">
-            <img src="./assets/d8-icon.png" alt="1d8" class="dice" />
-          </div>
-          <label for="d8-input"><b>1d8</b></label>
-          <input id="d8-input" name="d8-input" type="number" v-model="state.d8Amount" min="0" />
-        </div>
-      </div>
-      <div class="col col-1 col-mx-auto">
-        <div class="dice-panel">
-          <div class="dice-icon">
-            <img src="./assets/d10-icon.png" alt="1d10" class="dice" />
-          </div>
-          <label for="d10-input"><b>1d10</b></label>
-          <input id="d10-input" name="d10-input" type="number" v-model="state.d10Amount" min="0" />
-        </div>
-      </div>
-      <div class="col col-1 col-mx-auto">
-        <div class="dice-panel">
-          <div class="dice-icon">
-            <img src="./assets/d12-icon.png" alt="1d12" class="dice" />
-          </div>
-          <label for="d12-input"><b>1d12</b></label>
-          <input id="d12-input" name="d12-input" type="number" v-model="state.d12Amount" min="0" />
-        </div>
-      </div>
-      <div class="col col-1 col-mx-auto">
-        <div class="dice-panel">
-          <div class="dice-icon">
-            <img src="./assets/d20-icon.png" alt="1d20" class="dice" />
-          </div>
-          <label for="d20-input"><b>1d20</b></label>
-          <input id="d20-input" name="d20-input" type="number" v-model="state.d20Amount" min="0" />
-        </div>
-      </div>
-      <div class="col col-1 col-mx-auto">
-        <div class="dice-panel">
-          <div class="dice-icon">
-            <img src="./assets/d100-icon.png" alt="1d100" class="dice" />
-          </div>
-          <label for="d100-input"><b>1d100</b></label>
-          <input
-            id="d100-input"
-            name="d100-input"
-            type="number"
-            v-model="state.d100Amount"
-            min="0"
-          />
-        </div>
-      </div>
-    </div>
-    <div class="columns" v-if="Object.keys(state.latestDiceResult).length">
       <div class="col col-10 col-mx-auto">
-        <table class="table table-striped">
-          <thead>
-            <th>Sides</th>
-            <th>Results</th>
-            <th>Total</th>
-          </thead>
-          <tbody>
-            <tr v-for="(diceGroup, index) in state.latestDiceResult" :key="index">
-              <td>{{ index }}</td>
-              <td>{{ diceGroup.join(', ') }}</td>
-              <td>{{ calculateSum(diceGroup) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div class="columns">
-      <div class="col col-10 col-mx-auto">
-        <button class="btn btn-primary" v-on:click="onSubmitDicePool()">
-          Roll dice!
-        </button>
+        <div class="columns">
+          <div class="col col-12">
+            <h1>Dice pool</h1>
+          </div>
+          <div class="col col-1 col-mx-auto">
+            <div class="dice-panel">
+              <div class="dice-icon">
+                <img src="./assets/d4-icon.png" alt="1d4" class="dice" />
+              </div>
+              <label for="d4-input"><b>1d4</b></label>
+              <input id="d4-input" name="d4-input" type="number" v-model="state.d4Amount" min="0" />
+            </div>
+          </div>
+          <div class="col col-1 col-mx-auto">
+            <div class="dice-panel">
+              <div class="dice-icon">
+                <img src="./assets/d6-icon.png" alt="1d6" class="dice" />
+              </div>
+              <label for="d6-input"><b>1d6</b></label>
+              <input id="d6-input" name="d6-input" type="number" v-model="state.d6Amount" min="0" />
+            </div>
+          </div>
+          <div class="col col-1 col-mx-auto">
+            <div class="dice-panel">
+              <div class="dice-icon">
+                <img src="./assets/d8-icon.png" alt="1d8" class="dice" />
+              </div>
+              <label for="d8-input"><b>1d8</b></label>
+              <input id="d8-input" name="d8-input" type="number" v-model="state.d8Amount" min="0" />
+            </div>
+          </div>
+          <div class="col col-1 col-mx-auto">
+            <div class="dice-panel">
+              <div class="dice-icon">
+                <img src="./assets/d10-icon.png" alt="1d10" class="dice" />
+              </div>
+              <label for="d10-input"><b>1d10</b></label>
+              <input
+                id="d10-input"
+                name="d10-input"
+                type="number"
+                v-model="state.d10Amount"
+                min="0"
+              />
+            </div>
+          </div>
+          <div class="col col-1 col-mx-auto">
+            <div class="dice-panel">
+              <div class="dice-icon">
+                <img src="./assets/d12-icon.png" alt="1d12" class="dice" />
+              </div>
+              <label for="d12-input"><b>1d12</b></label>
+              <input
+                id="d12-input"
+                name="d12-input"
+                type="number"
+                v-model="state.d12Amount"
+                min="0"
+              />
+            </div>
+          </div>
+          <div class="col col-1 col-mx-auto">
+            <div class="dice-panel">
+              <div class="dice-icon">
+                <img src="./assets/d20-icon.png" alt="1d20" class="dice" />
+              </div>
+              <label for="d20-input"><b>1d20</b></label>
+              <input
+                id="d20-input"
+                name="d20-input"
+                type="number"
+                v-model="state.d20Amount"
+                min="0"
+              />
+            </div>
+          </div>
+          <div class="col col-1 col-mx-auto">
+            <div class="dice-panel">
+              <div class="dice-icon">
+                <img src="./assets/d100-icon.png" alt="1d100" class="dice" />
+              </div>
+              <label for="d100-input"><b>1d100</b></label>
+              <input
+                id="d100-input"
+                name="d100-input"
+                type="number"
+                v-model="state.d100Amount"
+                min="0"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col col-12">
+          <button class="btn btn-primary" v-on:click="onSubmitDicePool()">
+            Roll dice!
+          </button>
+        </div>
+        <div class="col col-12">
+          <h1>Latest throws</h1>
+        </div>
+        <div class="col col-12">
+          <button class="btn btn-primary" v-on:click="onRetrieveResults()">
+            Retrieve results
+          </button>
+        </div>
+        <div
+          class="col col-12"
+          v-for="(dicePoolResult, dicePoolResultIndex) in state.dicePoolHistory"
+          :key="dicePoolResultIndex"
+        >
+          <table class="table table-striped">
+            <thead>
+              <th>Sides</th>
+              <th>Results</th>
+              <th>Total</th>
+            </thead>
+            <tbody>
+              <tr v-for="(diceGroup, index) in dicePoolResult" :key="index">
+                <td>{{ index }}</td>
+                <td>{{ diceGroup.join(', ') }}</td>
+                <td>{{ calculateSum(diceGroup) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -122,7 +155,7 @@ interface State {
   d12Amount: number;
   d20Amount: number;
   d100Amount: number;
-  latestDiceResult: GroupedResult;
+  dicePoolHistory: GroupedResult[];
 }
 
 export default defineComponent({
@@ -138,7 +171,7 @@ export default defineComponent({
       d12Amount: 0,
       d20Amount: 0,
       d100Amount: 0,
-      latestDiceResult: new GroupedResult()
+      dicePoolHistory: []
     });
 
     const collectDicePool = (): DicePool =>
@@ -190,17 +223,22 @@ export default defineComponent({
     };
 
     const onSubmitDicePool = (): void => {
+      axios.post(`${EnvironmentHelper.baseUrl}/api/calculate`, collectDicePool());
+    };
+
+    const onRetrieveResults = (): void => {
       axios
-        .post(`${EnvironmentHelper.baseUrl}/api/calculate`, collectDicePool())
+        .get(`${EnvironmentHelper.baseUrl}/api/retrieve`)
         .then(
-          (result: AxiosResponse<RollResult[]>) =>
-            (state.latestDiceResult = groupDiceResults(result.data))
+          (result: AxiosResponse<RollResult[][]>) =>
+            (state.dicePoolHistory = result.data.map((r: RollResult[]) => groupDiceResults(r)))
         );
     };
 
     return {
       state,
       calculateSum,
+      onRetrieveResults,
       onSubmitDicePool
     };
   }
@@ -266,9 +304,8 @@ body {
     }
   }
 
-  & > div.roll-container {
-    display: flex;
-    justify-content: center;
+  & .table {
+    margin-bottom: 2rem;
   }
 }
 </style>
