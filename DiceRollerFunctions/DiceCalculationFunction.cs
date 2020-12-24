@@ -9,6 +9,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 
@@ -61,6 +62,23 @@ namespace DiceRollerFunctions
             return new OkObjectResult(queryResult
                 .Where(r => !string.IsNullOrWhiteSpace(r.JsonDiceRollRecord))
                 .Select(r => JsonConvert.DeserializeObject<List<DiceRollResult>>(r.JsonDiceRollRecord)));
+        }
+
+        [FunctionName("CleanRollHistory")]
+        public static async Task<IActionResult> CleanRollHistory(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "clean")] HttpRequest req,
+            [Table("DiceRolls")] CloudTable cloudTable)
+        {
+            var tableQuery = new TableQuery<DiceRollRecord>();
+            var queryResult = await cloudTable.ExecuteQuerySegmentedAsync(tableQuery, null);
+
+            foreach (var row in queryResult)
+            {
+                var deleteOperation = TableOperation.Delete(row);
+                await cloudTable.ExecuteAsync(deleteOperation);
+            }
+
+            return new OkResult();
         }
     }
 }

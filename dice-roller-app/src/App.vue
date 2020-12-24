@@ -113,6 +113,11 @@
             Retrieve results
           </button>
         </div>
+        <div class="col col-12">
+          <button class="btn btn-primary" v-on:click="onCleanHistory()">
+            Clean history
+          </button>
+        </div>
         <div
           class="col col-12"
           v-for="(dicePoolResult, dicePoolResultIndex) in state.dicePoolHistory"
@@ -226,6 +231,10 @@ export default defineComponent({
       axios.post(`${EnvironmentHelper.baseUrl}/api/calculate`, collectDicePool());
     };
 
+    const onCleanHistory = (): void => {
+      axios.delete(`${EnvironmentHelper.baseUrl}/api/clean`);
+    };
+
     const onRetrieveResults = (): void => {
       axios
         .get(`${EnvironmentHelper.baseUrl}/api/retrieve`)
@@ -239,6 +248,7 @@ export default defineComponent({
       state,
       calculateSum,
       onRetrieveResults,
+      onCleanHistory,
       onSubmitDicePool
     };
   }
