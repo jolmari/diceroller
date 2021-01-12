@@ -218,6 +218,18 @@ export default defineComponent({
         ]
       });
 
+    const resetDicePool = () => {
+      Object.assign(state, {
+        d4Amount: 0,
+        d6Amount: 0,
+        d8Amount: 0,
+        d10Amount: 0,
+        d12Amount: 0,
+        d20Amount: 0,
+        d100Amount: 0
+      });
+    };
+
     const calculateSum = (numbers: number[]) =>
       numbers.reduce((acc: number, current: number) => acc + current, 0);
 
@@ -234,7 +246,9 @@ export default defineComponent({
     };
 
     const onSubmitDicePool = (): void => {
-      axios.post(`${EnvironmentHelper.baseUrl}/api/calculate`, collectDicePool());
+      axios
+        .post(`${EnvironmentHelper.baseUrl}/api/calculate`, collectDicePool())
+        .then(() => resetDicePool());
     };
 
     const onCleanHistory = (): void => {
