@@ -29,16 +29,26 @@ namespace DiceRollerFunctions
 
                 if (string.IsNullOrWhiteSpace(payload.PlayerName))
                 {
-                    return new BadRequestObjectResult("Dice rolls requires a player name");
+                    return new BadRequestObjectResult("Please type in a player name");
                 }
 
-                if (!payload.Rolls.Any())
+                if (payload.PlayerName.Length > 255)
                 {
-                    return new OkObjectResult(new List<DiceRollRecord>());
+                    return new BadRequestObjectResult("Choose a shorter player name");
+                }
+
+                if (!payload.Rolls.Any(r => r.Amount > 0))
+                {
+                    return new BadRequestObjectResult("Select at least one die to roll");
+                }
+
+                if (payload.Rolls.Sum(r => r.Amount) > 100)
+                {
+                    return new BadRequestObjectResult("Maximum amount (100) of dice exceeded");
                 }
 
                 var diceRollResults = payload.Rolls
-                    .Where(r => r.Amount > 0 && r.Amount < 100)
+                    .Where(r => r.Amount > 0)
                     .Select(r => r.Roll())
                     .OrderBy(r => r.Sides);
 

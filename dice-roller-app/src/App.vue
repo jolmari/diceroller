@@ -9,6 +9,11 @@
     <div class="columns">
       <div class="col col-10 col-mx-auto">
         <div class="columns">
+          <div class="col col-12" v-if="state.errors.length">
+            <p>
+              <b>{{ state.errors[0] }}</b>
+            </p>
+          </div>
           <div class="col col-12">
             <h1>Dice pool</h1>
           </div>
@@ -17,7 +22,7 @@
               <div class="dice-icon">
                 <img src="./assets/d4-icon.png" alt="1d4" class="dice" />
               </div>
-              <label for="d4-input"><b>1d4</b></label>
+              <label for="d4-input"><b>d4</b></label>
               <input id="d4-input" name="d4-input" type="number" v-model="state.d4Amount" min="0" />
             </div>
           </div>
@@ -26,7 +31,7 @@
               <div class="dice-icon">
                 <img src="./assets/d6-icon.png" alt="1d6" class="dice" />
               </div>
-              <label for="d6-input"><b>1d6</b></label>
+              <label for="d6-input"><b>d6</b></label>
               <input id="d6-input" name="d6-input" type="number" v-model="state.d6Amount" min="0" />
             </div>
           </div>
@@ -35,7 +40,7 @@
               <div class="dice-icon">
                 <img src="./assets/d8-icon.png" alt="1d8" class="dice" />
               </div>
-              <label for="d8-input"><b>1d8</b></label>
+              <label for="d8-input"><b>d8</b></label>
               <input id="d8-input" name="d8-input" type="number" v-model="state.d8Amount" min="0" />
             </div>
           </div>
@@ -44,7 +49,7 @@
               <div class="dice-icon">
                 <img src="./assets/d10-icon.png" alt="1d10" class="dice" />
               </div>
-              <label for="d10-input"><b>1d10</b></label>
+              <label for="d10-input"><b>d10</b></label>
               <input
                 id="d10-input"
                 name="d10-input"
@@ -59,7 +64,7 @@
               <div class="dice-icon">
                 <img src="./assets/d12-icon.png" alt="1d12" class="dice" />
               </div>
-              <label for="d12-input"><b>1d12</b></label>
+              <label for="d12-input"><b>d12</b></label>
               <input
                 id="d12-input"
                 name="d12-input"
@@ -74,7 +79,7 @@
               <div class="dice-icon">
                 <img src="./assets/d20-icon.png" alt="1d20" class="dice" />
               </div>
-              <label for="d20-input"><b>1d20</b></label>
+              <label for="d20-input"><b>d20</b></label>
               <input
                 id="d20-input"
                 name="d20-input"
@@ -89,7 +94,7 @@
               <div class="dice-icon">
                 <img src="./assets/d100-icon.png" alt="1d100" class="dice" />
               </div>
-              <label for="d100-input"><b>1d100</b></label>
+              <label for="d100-input"><b>d100</b></label>
               <input
                 id="d100-input"
                 name="d100-input"
@@ -122,17 +127,17 @@
           v-for="(dicePoolResult, dicePoolResultIndex) in state.dicePoolHistory"
           :key="dicePoolResultIndex"
         >
-          <h3>{{ dicePoolResult.playerName }}'s throw</h3>
+          <h3>{{ dicePoolResult.playerName }}'s roll</h3>
           <h4>{{ new Date(dicePoolResult.timestampFormatted).toLocaleString() }}</h4>
           <table class="table table-striped">
             <thead>
-              <th>Sides</th>
+              <th>Die</th>
               <th>Results</th>
               <th>Total</th>
             </thead>
             <tbody>
               <tr v-for="(diceGroup, index) in dicePoolResult.results" :key="index">
-                <td>{{ index }}</td>
+                <td>d{{ index }}</td>
                 <td>{{ diceGroup.join(', ') }}</td>
                 <td>{{ calculateSum(diceGroup) }}</td>
               </tr>
@@ -151,10 +156,11 @@ import { PoolResult } from '@/models/poolResult';
 import { DicePool } from '@/models/dicePool';
 import { DiceRoll } from '@/models/diceRoll';
 import { GroupedResult } from '@/models/groupedResult';
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import { RollResult } from './models/rollResult';
 
 interface State {
+  errors: string[];
   d4Amount: number;
   d6Amount: number;
   d8Amount: number;
@@ -172,6 +178,7 @@ export default defineComponent({
   components: {},
   setup() {
     const state = reactive<State>({
+      errors: [],
       d4Amount: 0,
       d6Amount: 0,
       d8Amount: 0,
@@ -220,6 +227,7 @@ export default defineComponent({
 
     const resetDicePool = () => {
       Object.assign(state, {
+        errors: [],
         d4Amount: 0,
         d6Amount: 0,
         d8Amount: 0,
@@ -248,7 +256,10 @@ export default defineComponent({
     const onSubmitDicePool = (): void => {
       axios
         .post(`${EnvironmentHelper.baseUrl}/api/calculate`, collectDicePool())
-        .then(() => resetDicePool());
+        .then(() => resetDicePool())
+        .catch((error: AxiosError) => {
+          state.errors = [error.response?.data];
+        });
     };
 
     const onCleanHistory = (): void => {
