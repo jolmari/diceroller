@@ -47,7 +47,7 @@ namespace DiceRollerFunctions
                 var insertOperation = TableOperation.Insert(new DiceRollRecordTableEntity
                 {
                     PartitionKey = payload.PlayerName,
-                    RowKey = DateTime.UtcNow.Ticks.ToString("d19"),
+                    RowKey = (DateTime.MaxValue - DateTime.UtcNow).Ticks.ToString("d19"),
                     JsonDiceRollRecord = JsonConvert.SerializeObject(new DiceRollRecord
                     {
                         PlayerName = payload.PlayerName,
@@ -72,7 +72,8 @@ namespace DiceRollerFunctions
 
             var rollRecords = queryResult
                 .Where(r => !string.IsNullOrWhiteSpace(r.JsonDiceRollRecord))
-                .Select(r => JsonConvert.DeserializeObject<DiceRollRecord>(r.JsonDiceRollRecord));
+                .Select(r => JsonConvert.DeserializeObject<DiceRollRecord>(r.JsonDiceRollRecord))
+                .OrderByDescending(r => r.TimestampUtc);
 
             return new OkObjectResult(rollRecords);
         }

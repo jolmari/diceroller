@@ -6,6 +6,6 @@ export class PoolResult {
   }
 
   public playerName = '';
-  public timestampLocal: Date = new Date();
+  public timestampFormatted: Date = new Date();
   public diceRolls: RollResult[] = [];
 }

@@ -7,7 +7,7 @@ namespace DiceRollerFunctions.Models
     {
         public string PlayerName { get; set; }
         public DateTime TimestampUtc { get; set; }
-        public DateTime TimestampLocal => TimestampUtc.ToLocalTime();
+        public string TimestampFormatted => TimestampUtc.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fffK");
         public IEnumerable<DiceRoll> DiceRolls { get; set; }
     }
 }

@@ -128,7 +128,7 @@
           :key="dicePoolResultIndex"
         >
           <h3>{{ dicePoolResult.playerName }}'s throw</h3>
-          <h4>{{ dicePoolResult.timestampLocal }}</h4>
+          <h4>{{ new Date(dicePoolResult.timestampFormatted).toLocaleString() }}</h4>
           <table class="table table-striped">
             <thead>
               <th>Sides</th>
@@ -235,7 +235,7 @@ export default defineComponent({
         acc.results[current.sides] = [...acc.results[current.sides], ...current.results];
 
         return acc;
-      }, new GroupedResult({ playerName: result.playerName, timestampLocal: result.timestampLocal }));
+      }, new GroupedResult({ playerName: result.playerName, timestampFormatted: result.timestampFormatted }));
     };
 
     const onSubmitDicePool = (): void => {

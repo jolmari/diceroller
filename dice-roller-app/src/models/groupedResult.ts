@@ -7,6 +7,6 @@ export class GroupedResult {
   }
 
   public playerName = '';
-  public timestampLocal: Date = new Date();
+  public timestampFormatted: Date = new Date();
   public results: RollMap = new RollMap();
 }
