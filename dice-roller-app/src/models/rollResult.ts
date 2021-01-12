@@ -4,5 +4,6 @@ export class RollResult {
   }
 
   public sides = 0;
-  public result = 0;
+  public amount = 0;
+  public results: number[] = [];
 }

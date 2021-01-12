@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.WindowsAzure.Storage.Table;
 
 namespace DiceRollerFunctions.Models
 {
-    public class DiceRollRecord : TableEntity
+    public class DiceRollRecord
     {
-        public string JsonDiceRollRecord { get; set; }
+        public string PlayerName { get; set; }
+        public DateTime TimestampUtc { get; set; }
+        public DateTime TimestampLocal => TimestampUtc.ToLocalTime();
+        public IEnumerable<DiceRoll> DiceRolls { get; set; }
     }
 }

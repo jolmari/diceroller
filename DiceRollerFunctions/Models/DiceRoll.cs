@@ -1,35 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace DiceRollerFunctions.Models
 {
-    public class DiceRollResult
-    {
-        public int Sides { get; set; }
-        public int Result { get; set; }
-    }
-
     public class DiceRoll
     {
-        private readonly int _sides;
-        private readonly int _amount;
+        public int Sides { get; }
+        public int Amount { get; }
+        public IEnumerable<int> Results { get; private set; }
 
         public DiceRoll(int sides, int amount)
         {
-            _sides = sides;
-            _amount = amount;
+            Sides = sides;
+            Amount = amount;
+            Results = new List<int>();
         }
 
-        public IEnumerable<DiceRollResult> Roll()
+        public DiceRoll Roll()
         {
             var random = new Random();
-            return Enumerable.Range(1, _amount)
-                .Select(r => new DiceRollResult
-                {
-                    Sides = _sides,
-                    Result = random.Next(1, _sides + 1)
-                });
+            Results =  Enumerable.Range(1, Amount)
+                .Select(r => random.Next(1, Sides + 1));
+            return this;
         }
     }
 }

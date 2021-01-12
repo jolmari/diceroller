@@ -128,6 +128,7 @@
           :key="dicePoolResultIndex"
         >
           <h3>{{ dicePoolResult.playerName }}'s throw</h3>
+          <h4>{{ dicePoolResult.timestampLocal }}</h4>
           <table class="table table-striped">
             <thead>
               <th>Sides</th>
@@ -135,7 +136,7 @@
               <th>Total</th>
             </thead>
             <tbody>
-              <tr v-for="(diceGroup, index) in dicePoolResult.rolls" :key="index">
+              <tr v-for="(diceGroup, index) in dicePoolResult.results" :key="index">
                 <td>{{ index }}</td>
                 <td>{{ diceGroup.join(', ') }}</td>
                 <td>{{ calculateSum(diceGroup) }}</td>
@@ -156,6 +157,7 @@ import { DicePool } from '@/models/dicePool';
 import { DiceRoll } from '@/models/diceRoll';
 import { GroupedResult } from '@/models/groupedResult';
 import axios, { AxiosResponse } from 'axios';
+import { RollResult } from './models/rollResult';
 
 interface State {
   d4Amount: number;
@@ -225,15 +227,15 @@ export default defineComponent({
       numbers.reduce((acc: number, current: number) => acc + current, 0);
 
     const groupDiceResults = (result: PoolResult): GroupedResult => {
-      return result.results.reduce((acc: GroupedResult, current: any) => {
-        if (!acc.rolls[current.sides]) {
-          acc.rolls[current.sides] = [];
+      return result.diceRolls.reduce((acc: GroupedResult, current: RollResult) => {
+        if (!acc.results[current.sides]) {
+          acc.results[current.sides] = [];
         }
 
-        acc.rolls[current.sides] = [...acc.rolls[current.sides], current.result];
+        acc.results[current.sides] = [...acc.results[current.sides], ...current.results];
 
         return acc;
-      }, new GroupedResult({ playerName: result.playerName }));
+      }, new GroupedResult({ playerName: result.playerName, timestampLocal: result.timestampLocal }));
     };
 
     const onSubmitDicePool = (): void => {

@@ -32,27 +32,33 @@ namespace DiceRollerFunctions
                     return new BadRequestObjectResult("Dice rolls requires a player name");
                 }
 
-                var result = payload.Rolls
-                    .SelectMany(r => r.Roll())
-                    .OrderBy(r => r.Sides);
-
-                if (!result.Any())
+                if (!payload.Rolls.Any())
                 {
-                    return new OkResult();
+                    return new OkObjectResult(new List<DiceRollRecord>());
                 }
 
-                // Insert roll to table storage. Add RowKey as a timestamp decremented from
-                // max value. This guarantees that the table insertion order is newest first.
-                var insertOperation = TableOperation.Insert(new DiceRollRecord
+                var diceRollResults = payload.Rolls
+                    .Where(r => r.Amount > 0 && r.Amount < 100)
+                    .Select(r => r.Roll())
+                    .OrderBy(r => r.Sides);
+
+                // Insert roll to table storage. Add RowKey as a timestamp ticks.
+                // This guarantees that the table insertion order is newest first.
+                var insertOperation = TableOperation.Insert(new DiceRollRecordTableEntity
                 {
                     PartitionKey = payload.PlayerName,
-                    RowKey = (DateTime.MaxValue - DateTime.UtcNow).Ticks.ToString("d19"),
-                    JsonDiceRollRecord = JsonConvert.SerializeObject(result)
+                    RowKey = DateTime.UtcNow.Ticks.ToString("d19"),
+                    JsonDiceRollRecord = JsonConvert.SerializeObject(new DiceRollRecord
+                    {
+                        PlayerName = payload.PlayerName,
+                        TimestampUtc = DateTime.UtcNow,
+                        DiceRolls = diceRollResults
+                    })
                 });
 
                 await cloudTable.ExecuteAsync(insertOperation);
 
-                return new OkObjectResult(result);
+                return new OkObjectResult(diceRollResults);
             }
         }
 
@@ -61,18 +67,14 @@ namespace DiceRollerFunctions
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "retrieve")] HttpRequest req,
             [Table("DiceRolls")] CloudTable cloudTable)
         {
-            var tableQuery = new TableQuery<DiceRollRecord>();
+            var tableQuery = new TableQuery<DiceRollRecordTableEntity>();
             var queryResult = await cloudTable.ExecuteQuerySegmentedAsync(tableQuery, null);
 
-            var rolls = queryResult
+            var rollRecords = queryResult
                 .Where(r => !string.IsNullOrWhiteSpace(r.JsonDiceRollRecord))
-                .Select(r => new
-                {
-                    PlayerName = r.PartitionKey,
-                    Results = JsonConvert.DeserializeObject<List<DiceRollResult>>(r.JsonDiceRollRecord)
-                });
+                .Select(r => JsonConvert.DeserializeObject<DiceRollRecord>(r.JsonDiceRollRecord));
 
-            return new OkObjectResult(rolls);
+            return new OkObjectResult(rollRecords);
         }
 
         [FunctionName("CleanRollHistory")]
@@ -80,7 +82,7 @@ namespace DiceRollerFunctions
             [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "clean")] HttpRequest req,
             [Table("DiceRolls")] CloudTable cloudTable)
         {
-            var tableQuery = new TableQuery<DiceRollRecord>();
+            var tableQuery = new TableQuery<DiceRollRecordTableEntity>();
             var queryResult = await cloudTable.ExecuteQuerySegmentedAsync(tableQuery, null);
 
             foreach (var row in queryResult)

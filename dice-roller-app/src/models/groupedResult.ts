@@ -7,5 +7,6 @@ export class GroupedResult {
   }
 
   public playerName = '';
-  public rolls: RollMap = new RollMap();
+  public timestampLocal: Date = new Date();
+  public results: RollMap = new RollMap();
 }
