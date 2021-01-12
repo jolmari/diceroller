@@ -113,11 +113,6 @@
           <h1>Latest throws</h1>
         </div>
         <div class="col col-12">
-          <button class="btn btn-primary" v-on:click="onRetrieveResults()">
-            Retrieve results
-          </button>
-        </div>
-        <div class="col col-12">
           <button class="btn btn-primary" v-on:click="onCleanHistory()">
             Clean history
           </button>
@@ -150,7 +145,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive } from 'vue';
+import { defineComponent, onMounted, reactive } from 'vue';
 import { EnvironmentHelper } from '@/helpers/environment-helper';
 import { PoolResult } from '@/models/poolResult';
 import { DicePool } from '@/models/dicePool';
@@ -254,6 +249,10 @@ export default defineComponent({
             (state.dicePoolHistory = result.data.map((r: PoolResult) => groupDiceResults(r)))
         );
     };
+
+    onMounted(() => {
+      setInterval(() => onRetrieveResults(), 2000);
+    });
 
     return {
       state,
