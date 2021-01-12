@@ -5,5 +5,6 @@ export class DicePool {
     Object.assign(this, init);
   }
 
+  public playerName = '';
   public rolls: DiceRoll[] = [];
 }

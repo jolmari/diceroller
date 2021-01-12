@@ -27,6 +27,11 @@ namespace DiceRollerFunctions
                 var content = await reader.ReadToEndAsync();
                 var payload = JsonConvert.DeserializeObject<DicePool>(content);
 
+                if (string.IsNullOrWhiteSpace(payload.PlayerName))
+                {
+                    return new BadRequestObjectResult("Dice rolls requires a player name");
+                }
+
                 var result = payload.Rolls
                     .SelectMany(r => r.Roll())
                     .OrderBy(r => r.Sides);
@@ -40,7 +45,7 @@ namespace DiceRollerFunctions
                 // max value. This guarantees that the table insertion order is newest first.
                 var insertOperation = TableOperation.Insert(new DiceRollRecord
                 {
-                    PartitionKey = "<UserName>",
+                    PartitionKey = payload.PlayerName,
                     RowKey = (DateTime.MaxValue - DateTime.UtcNow).Ticks.ToString("d19"),
                     JsonDiceRollRecord = JsonConvert.SerializeObject(result)
                 });
@@ -59,9 +64,15 @@ namespace DiceRollerFunctions
             var tableQuery = new TableQuery<DiceRollRecord>();
             var queryResult = await cloudTable.ExecuteQuerySegmentedAsync(tableQuery, null);
 
-            return new OkObjectResult(queryResult
+            var rolls = queryResult
                 .Where(r => !string.IsNullOrWhiteSpace(r.JsonDiceRollRecord))
-                .Select(r => JsonConvert.DeserializeObject<List<DiceRollResult>>(r.JsonDiceRollRecord)));
+                .Select(r => new
+                {
+                    PlayerName = r.PartitionKey,
+                    Results = JsonConvert.DeserializeObject<List<DiceRollResult>>(r.JsonDiceRollRecord)
+                });
+
+            return new OkObjectResult(rolls);
         }
 
         [FunctionName("CleanRollHistory")]

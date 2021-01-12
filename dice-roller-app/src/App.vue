@@ -99,6 +99,10 @@
               />
             </div>
           </div>
+          <div class="col col-12">
+            <label for="name-input"><b>Player name</b></label>
+            <input id="name-input" name="name-input" type="text" v-model="state.playerName" />
+          </div>
         </div>
         <div class="col col-12">
           <button class="btn btn-primary" v-on:click="onSubmitDicePool()">
@@ -123,6 +127,7 @@
           v-for="(dicePoolResult, dicePoolResultIndex) in state.dicePoolHistory"
           :key="dicePoolResultIndex"
         >
+          <h3>{{ dicePoolResult.playerName }}'s throw</h3>
           <table class="table table-striped">
             <thead>
               <th>Sides</th>
@@ -130,7 +135,7 @@
               <th>Total</th>
             </thead>
             <tbody>
-              <tr v-for="(diceGroup, index) in dicePoolResult" :key="index">
+              <tr v-for="(diceGroup, index) in dicePoolResult.rolls" :key="index">
                 <td>{{ index }}</td>
                 <td>{{ diceGroup.join(', ') }}</td>
                 <td>{{ calculateSum(diceGroup) }}</td>
@@ -146,7 +151,7 @@
 <script lang="ts">
 import { defineComponent, reactive } from 'vue';
 import { EnvironmentHelper } from '@/helpers/environment-helper';
-import { RollResult } from '@/models/rollResult';
+import { PoolResult } from '@/models/poolResult';
 import { DicePool } from '@/models/dicePool';
 import { DiceRoll } from '@/models/diceRoll';
 import { GroupedResult } from '@/models/groupedResult';
@@ -160,6 +165,7 @@ interface State {
   d12Amount: number;
   d20Amount: number;
   d100Amount: number;
+  playerName: string;
   dicePoolHistory: GroupedResult[];
 }
 
@@ -176,11 +182,13 @@ export default defineComponent({
       d12Amount: 0,
       d20Amount: 0,
       d100Amount: 0,
+      playerName: '',
       dicePoolHistory: []
     });
 
     const collectDicePool = (): DicePool =>
       new DicePool({
+        playerName: state.playerName,
         rolls: [
           new DiceRoll({
             sides: 4,
@@ -216,15 +224,16 @@ export default defineComponent({
     const calculateSum = (numbers: number[]) =>
       numbers.reduce((acc: number, current: number) => acc + current, 0);
 
-    const groupDiceResults = (result: RollResult[]): GroupedResult => {
-      return result.reduce((acc: GroupedResult, current: any) => {
-        if (!acc[current.sides]) {
-          acc[current.sides] = [];
+    const groupDiceResults = (result: PoolResult): GroupedResult => {
+      return result.results.reduce((acc: GroupedResult, current: any) => {
+        if (!acc.rolls[current.sides]) {
+          acc.rolls[current.sides] = [];
         }
 
-        acc[current.sides] = [...acc[current.sides], current.result];
+        acc.rolls[current.sides] = [...acc.rolls[current.sides], current.result];
+
         return acc;
-      }, new GroupedResult());
+      }, new GroupedResult({ playerName: result.playerName }));
     };
 
     const onSubmitDicePool = (): void => {
@@ -239,8 +248,8 @@ export default defineComponent({
       axios
         .get(`${EnvironmentHelper.baseUrl}/api/retrieve`)
         .then(
-          (result: AxiosResponse<RollResult[][]>) =>
-            (state.dicePoolHistory = result.data.map((r: RollResult[]) => groupDiceResults(r)))
+          (result: AxiosResponse<PoolResult[]>) =>
+            (state.dicePoolHistory = result.data.map((r: PoolResult) => groupDiceResults(r)))
         );
     };
 
