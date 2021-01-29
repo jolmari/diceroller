@@ -1,0 +1,12 @@
+# Resource group
+az group create --location northeurope --name diceRoller
+
+# Storage account
+az storage account create --name dicerollerstorage --resource-group diceRoller
+
+# Function app creation
+az functionapp create --consumption-plan-location northeurope --name diceRollerFunctions --os-type windows --resource-group diceRoller --runtime dotnet --functions-version 2 --storage-account dicerollerstorage --disable-app-insights true
+
+# Function app deployment
+az functionapp deployment source config-zip --resource-group dicerollertwo --name diceRollerFunctions --src publish.zip
+
